@@ -1056,7 +1056,7 @@ export default {
 
       console.log('start');
 
-       axios.post('http://localhost:89/api/single_listing', {
+       axios.post((process.env.VUE_APP_ROOT_API +'/single_listing', {
          
               slug: this.$route.params.slug
             
