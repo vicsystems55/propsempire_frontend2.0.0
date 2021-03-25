@@ -621,7 +621,7 @@
                                             <div class="media">
                                                 <img class="mr-3" src="images/team/lc1.png" alt="lc1.png">
                                                 <div class="media-body">
-                                                    <h5 class="mt-0 mb0">{{listing.agent.name}}</h5>
+                                                    <h5 class="mt-0 mb0"></h5>
                                                     <p class="mb0">(123)456-7890</p>
                                                     <p class="mb0"><a href="https://grandetest.com/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="c9a0a7afa689afa0a7ada1a6bcbaace7aaa6a4">[email&#160;protected]</a></p>
                                                     <a class="text-thm" href="#">View My Listing</a>
@@ -629,31 +629,39 @@
                                             </div>
                                         </div>
                                         <ul class="sasw_list mb0">
+                                            <div v-if="loading" class="cs"> 
+                                                <lottie-player src="https://assets1.lottiefiles.com/datafiles/kr7vxsZXeUCocfV/data.json" background="transparent"  speed="1"  style="width: 120px; height: 120px;" loop  autoplay></lottie-player>
+
+                                            </div>
                                             <li class="search_area">
                                                 <div class="form-group">
-                                                    <input v-model="visitors_name" type="text" class="form-control" id="exampleInputName1" placeholder="Your Name">
+                                                    <input @keyup="validate()" v-model="visitors_name" type="text" class="form-control" id="exampleInputName1" placeholder="Your Name">
                                                 </div>
                                             </li>
                                             <li class="search_area">
                                                 <div class="form-group">
-                                                    <input v-model="visitors_phone" type="number" class="form-control" id="exampleInputName2" placeholder="Phone">
+                                                    <input @keyup="validate()" v-model="visitors_phone" type="number" class="form-control" id="exampleInputName2" placeholder="Phone">
                                                 </div>
                                             </li>
                                             <li class="search_area">
                                                 <div class="form-group">
-                                                    <input v-model="visitors_email" type="email" class="form-control" id="exampleInputEmail" placeholder="Email">
+                                                    <input @keyup="validate()"  v-model="visitors_email" type="email" class="form-control" id="exampleInputEmail" placeholder="Email">
                                                 </div>
                                             </li>
                                             <li class="search_area">
                                                 <div class="form-group">
-                                                    <textarea v-model="visitors_message" id="form_message" name="form_message" class="form-control required" rows="5" required="required" placeholder="I'm interest in [ Listing Single ]"></textarea>
+                                                    <textarea @keyup="validate()" v-model="visitors_message" id="form_message" name="form_message" class="form-control required" rows="5" required="required" placeholder="I'm interest in [ Listing Single ]"></textarea>
                                                 </div>
                                             </li>
                                             <li>
                                                 <div class="search_option_button">
-                                                    <button @click="sendMessage()" type="submit" class="btn btn-block btn-thm">Send</button>
+                                                    <button @click="sendMessage()" type="submit" class="btn btn-block btn-thm" :disabled="state" >
+                                                        Send
+
+                                                    </button>
                                                 </div>
                                             </li>
+                                           
                                         </ul>
                                     </div>
                                 </div>
@@ -1041,12 +1049,22 @@
 <script>
 import Header from "@/components/Header.vue";
 import MobileNav from "@/components/MobileNav.vue";
+import axios from 'axios';
 export default {
   data () {
     return {
         listing: [],
+
         visitors_message: '',
-        visitors_
+        visitors_name: '',
+        visitors_phone: '',
+        visitors_email: '',
+
+        agents_id: '',
+        agents_name: '',
+
+        loading: false,
+        state: true
     }
   },
   props: {
@@ -1054,16 +1072,24 @@ export default {
   methods: {
        single_listing(){
 
-      console.log('start');
 
-       axios.post((process.env.VUE_APP_ROOT_API +'/single_listing', {
+
+      console.log('start')
+
+       axios.post(process.env.VUE_APP_ROOT_API +'single_listing', {
          
               slug: this.$route.params.slug
+             
+              
             
           })
            .then((response)=>(
              
-             this.listing = response.data
+             this.listing = response.data,
+             this.agents_id = response.data.agents.id,
+             this.agents_name = response.data.agents.name,
+             this.listing = response.data,
+             console.log(this.listing)
 
             
              
@@ -1075,7 +1101,60 @@ export default {
             // always executed
             // var vm = this;
             // console.log(vm.listing);
-          }); 
+          });
+
+          
+    },
+    validate(){
+        console.log('i see you')
+        if(this.visitors_name && this.visitors_phone && this.visitors_email && this.visitors_message != null){
+            console.log('not null') 
+            this.state = false
+        }else{
+             console.log('null')
+          
+        }
+    },
+      sendMessage(){
+
+      console.log('seding...')
+
+      this.loading = true
+
+       console.log('sent...')
+
+       axios.post(process.env.VUE_APP_ROOT_API +'send_message', {
+         
+         
+              _from_name: this.visitors_name,
+              _from_phone: this.visitors_phone,
+              _from_email: this.visitors_email, 
+              _to: this.agents_id, 
+              slug: this.$route.params.slug, 
+              _to_name: this.agents_name, 
+              body: this.visitors_message
+              
+            
+          })
+           .then((response)=>(
+            //  vm = this,
+
+             console.log('come board...'),
+
+             this.loading = false,
+           
+
+            console.log(response)
+             
+             ))
+          .catch(function (error) {
+            console.log(error);
+          })
+          .then(function () {
+            // always executed
+            // var vm = this;
+            // console.log(vm.listing);
+          });
 
           
     }
@@ -1083,7 +1162,7 @@ export default {
   created () {
        this.single_listing();
   },
-   name: "SingleView",
+   
   components: {
    
     Header,
@@ -1094,3 +1173,18 @@ export default {
     
 }
 </script>
+
+<style>
+
+.cs{
+    background-color: rgba(238, 228, 228, 0.016);
+    position: absolute;
+    width: 200px;
+    min-height: 300px;
+    z-index: 99;
+    
+    padding: 20px;
+
+}
+
+</style>
