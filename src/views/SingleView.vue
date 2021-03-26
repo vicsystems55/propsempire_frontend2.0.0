@@ -1075,7 +1075,6 @@ export default {
 
 
       console.log('start')
-
        axios.post(process.env.VUE_APP_ROOT_API +'single_listing', {
          
               slug: this.$route.params.slug
@@ -1126,12 +1125,12 @@ export default {
        axios.post(process.env.VUE_APP_ROOT_API +'send_message', {
          
          
-              _from_name: this.visitors_name,
-              _from_phone: this.visitors_phone,
-              _from_email: this.visitors_email, 
-              _to: this.agents_id, 
+              from_name: this.visitors_name,
+              from_phone: this.visitors_phone,
+              from_email: this.visitors_email, 
+              to: this.agents_id, 
               slug: this.$route.params.slug, 
-              _to_name: this.agents_name, 
+              to_name: this.agents_name, 
               body: this.visitors_message
               
             
